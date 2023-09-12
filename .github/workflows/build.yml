@@ -1,0 +1,36 @@
+name: Kernel Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      toolchain:
+          description: 'Select a toolchain name gcc/clang'
+          required: true
+      pushto:
+          description: 'Send kernel file to github/telegram'
+          required: true
+
+env:
+  TELEGRAM_TOKEN: ${{ secrets.TG_TOKEN }}
+  TELEGRAM_CHAT: ${{ secrets.TG_CHAT }}
+  COMP: ${{ github.event.inputs.toolchain }}
+  PUSH_TO: ${{ github.event.inputs.pushto }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: hoppless/archlinux:latest
+    steps:
+      - uses: actions/checkout@v3.0.2
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+      - name: Start building kernel
+        run: |
+             git config --global user.name "Hoppless"
+             git config --global user.email "hoppless@proton.me"
+             echo "https://Hoppless:$GH_TOKEN@github.com" > ~/.git-credentials
+             git config --global credential.helper "store --file ~/.git-credentials"
+             git clone https://github.com/Hopireika/kernel_xiaomi_mt6768 kernel
+             cp kernel.sh kernel && cd kernel && bash kernel.sh
