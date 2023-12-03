@@ -15,14 +15,13 @@ GCC32_DIR=$KERNEL_DIR/gcc32
 TC_DIR=$KERNEL_DIR/clang-llvm
 
 # Kernel info
-KNAME="Hopireika"
-KVERSION="Trixila"
+KNAME="Pineaple"
 AUTHOR="Kizziama"
 ARCH=arm64
 DEFCONFIG="merlin_defconfig"
 COMPILER="${COMP}"
 LTO="1"
-POLLY="1"
+POLLY="0"
 KERNELSU="1"
 LINKER=ld.lld
 
@@ -187,13 +186,11 @@ build_kernel() {
 <b>[*] Device Name</b>    => <code>${MODEL} [${DEVICE}]</code>
 <b>[*] Defconfig</b>      => <code>$DEFCONFIG</code>
 <b>[*] Kernel Name</b>    => <code>${KNAME}</code>
-<b>[*] Kernel Version</b> => <code>${KVERSION}</code>
 <b>[*] Linux Version</b>  => <code>$(make kernelversion)</code>
 <b>[*] Compiler Name</b>  => <code>${KBUILD_COMPILER_STRING}</code>
 <b>------------------------------------------</b>
 "
 
-	echo "-$KNAME-$KVERSION" >>localversion
 	make O=out $DEFCONFIG
 	BUILD_START=$(date +"%s")
 
@@ -290,7 +287,7 @@ push() {
 
 	if [[ "$PUSH" == "github" ]]; then
 		echo -e "\n\e[1;93m[*] Starting push kernel to Github Release! \e[0m"
-		org="Hopireika"
+		org="Kizziama"
 		rel_repo="release"
 		rel_tag="$(date "+%d%m%Y")"
 		rel_date="$(date "+%-d %B %Y")"

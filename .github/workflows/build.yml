@@ -6,9 +6,22 @@ on:
       toolchain:
           description: 'Select a toolchain name gcc/clang'
           required: true
+          default: ''
+          type: choice
+          options:
+          - fortune
+          - gcc
+          - neutron
+          - clang
+          - dtc
       pushto:
           description: 'Send kernel file to github/telegram'
           required: true
+          default: ''
+          type: choice
+          options:
+          - telegram
+          - github
 
 env:
   TELEGRAM_TOKEN: ${{ secrets.TG_TOKEN }}
@@ -21,16 +34,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: hoppless/archlinux:latest
+      image: kizziama/archlinux:latest
     steps:
       - uses: actions/checkout@v3.0.2
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
       - name: Start building kernel
         run: |
-             git config --global user.name "Hoppless"
-             git config --global user.email "hoppless@proton.me"
-             echo "https://Hoppless:$GH_TOKEN@github.com" > ~/.git-credentials
+             git config --global user.name "Kizziama"
+             git config --global user.email "kizziama@proton.me"
+             echo "https://Kizziama:$GH_TOKEN@github.com" > ~/.git-credentials
              git config --global credential.helper "store --file ~/.git-credentials"
-             git clone https://github.com/Hopireika/kernel_xiaomi_mt6768 kernel
+             git clone https://github.com/Fortune-OS-Devices/kernel_xiaomi_mt6768 kernel
              cp kernel.sh kernel && cd kernel && bash kernel.sh
