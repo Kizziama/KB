@@ -45,5 +45,5 @@ jobs:
              git config --global user.email "kizziama@proton.me"
              echo "https://Kizziama:$GH_TOKEN@github.com" > ~/.git-credentials
              git config --global credential.helper "store --file ~/.git-credentials"
-             git clone https://github.com/Fortune-OS-Devices/kernel_xiaomi_mt6768 kernel
+             git clone https://github.com/Fortune-OS-Devices/kernel_xiaomi_mt6768 -b Pineaple kernel
              cp kernel.sh kernel && cd kernel && bash kernel.sh
