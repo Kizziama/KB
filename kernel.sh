@@ -18,16 +18,16 @@ TC_DIR=$KERNEL_DIR/clang-llvm
 KNAME="Pineaple"
 AUTHOR="Kizziama"
 ARCH=arm64
-DEFCONFIG="merlin_defconfig"
+DEFCONFIG="gki_defconfig"
 COMPILER="${COMP}"
 LTO="1"
 POLLY="0"
-KERNELSU="1"
+KERNELSU="$KSU"
 LINKER=ld.lld
 
 # Device info
-MODEL="Redmi Note 9"
-DEVICE="merlin"
+MODEL="Redmi Note 12 4G"
+DEVICE="topaz/tapas"
 
 # Misc info
 CLEAN="0"
@@ -114,13 +114,12 @@ clone() {
 	fi
 
 	if [[ $KERNELSU == "1" ]]; then
-		echo "CONFIG_KSU=y" >>arch/arm64/configs/$DEFCONFIG
-		git clone https://github.com/tiann/KernelSU
+		bash <(curl -Ls https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh)
 	fi
 
 	if ! [[ -d "AnyKernel3" ]]; then
 		echo -e "\n\e[1;93m[*] Cloning AnyKernel3 \e[0m"
-		git clone --depth 1 --no-single-branch https://github.com/Hopireika/AnyKernel3.git -b merlin
+		git clone --depth 1 --no-single-branch https://github.com/PineaplePrjk/AnyKernel3.git -b topaz-gki
 	fi
 }
 
@@ -243,12 +242,15 @@ build_kernel() {
 
 gen_zip() {
 	echo -e "\n\e[1;32m[*] Create a flashable zip! \e[0m"
-	mv "$KERNEL_DIR"/out/arch/arm64/boot/Image.gz-dtb AnyKernel3
-	mv "$KERNEL_DIR"/out/arch/arm64/boot/dts/mediatek/mt6768.dtb AnyKernel3
-	mv "$KERNEL_DIR"/out/arch/arm64/boot/dtbo.img AnyKernel3
+	mv "$KERNEL_DIR"/out/arch/arm64/boot/Image AnyKernel3
 	cdir AnyKernel3
-	zip -r $KNAME-$KVERSION-$DEVICE-"$ZDATE" . -x ".git*" -x "README.md" -x "*.zip"
-	ZIP_FINAL="$KNAME-$KVERSION-$DEVICE-$ZDATE"
+        if [[ $KERNELSU == "1" ]]; then
+		zip -r $KNAME-$DEVICE-KSU-"$ZDATE" . -x ".git*" -x "README.md" -x "*.zip"
+		ZIP_FINAL="$KNAME-$DEVICE-KSU-$ZDATE"
+	else
+		zip -r $KNAME-$DEVICE-"$ZDATE" . -x ".git*" -x "README.md" -x "*.zip"
+		ZIP_FINAL="$KNAME-$DEVICE-$ZDATE"
+fi
 
 	if [[ $SIGN == 1 ]]; then
 		## Sign the zip before sending it to telegram
@@ -306,7 +308,7 @@ push() {
 		cp ../$cfile .
 
 		git add $cfile
-		git commit -asm "release: Add Hopireika Kernel build $rel_tag"
+		git commit -asm "release: Add Pineaple Kernel build $rel_tag"
 		git gc
 		git push -f
 

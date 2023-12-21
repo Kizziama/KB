@@ -1,4 +1,4 @@
-name: Kernel Build
+name: GKI Build
 
 on:
   workflow_dispatch:
@@ -31,19 +31,40 @@ env:
   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
 jobs:
-  build:
+  build-stock:
     runs-on: ubuntu-latest
     container:
       image: kizziama/archlinux:latest
+    env:
+      KSU: 0
     steps:
       - uses: actions/checkout@v3.0.2
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
-      - name: Start building kernel
+      - name: Start GKI Build
         run: |
              git config --global user.name "Kizziama"
              git config --global user.email "kizziama@proton.me"
              echo "https://Kizziama:$GH_TOKEN@github.com" > ~/.git-credentials
              git config --global credential.helper "store --file ~/.git-credentials"
-             git clone https://github.com/Fortune-OS-Devices/kernel_xiaomi_mt6768 -b Pineaple kernel
+             git clone https://github.com/PineaplePrjk/android_kernel_common kernel
+             cp kernel.sh kernel && cd kernel && bash kernel.sh
+
+  build-ksu:
+    runs-on: ubuntu-latest
+    container:
+      image: kizziama/archlinux:latest
+    env:
+      KSU: 1
+    steps:
+      - uses: actions/checkout@v3.0.2
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+      - name: Start GKI Build
+        run: |
+             git config --global user.name "Kizziama"
+             git config --global user.email "kizziama@proton.me"
+             echo "https://Kizziama:$GH_TOKEN@github.com" > ~/.git-credentials
+             git config --global credential.helper "store --file ~/.git-credentials"
+             git clone https://github.com/PineaplePrjk/android_kernel_common kernel
              cp kernel.sh kernel && cd kernel && bash kernel.sh
