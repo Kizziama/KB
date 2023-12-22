@@ -22,12 +22,11 @@ DEFCONFIG="gki_defconfig"
 COMPILER="${COMP}"
 LTO="1"
 POLLY="0"
-KERNELSU="$KSU"
 LINKER=ld.lld
 
 # Device info
 MODEL="Redmi Note 12 4G"
-DEVICE="topaz/tapas"
+DEVICE="topaz"
 
 # Misc info
 CLEAN="0"
@@ -50,6 +49,10 @@ COMMIT_HEAD=$(git log --oneline -1)
 # Date info
 DATE=$(date +"%d-%m-%Y")
 ZDATE="$(date "+%d%m%Y")"
+
+if [[ $1 = "-k" || $1 = "--kernelsu" ]]; then
+	KERNELSU=1
+fi
 
 clone() {
 	echo " "
