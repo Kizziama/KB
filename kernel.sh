@@ -96,6 +96,11 @@ clone() {
 			bash <(curl -s https://raw.githubusercontent.com/Hoppless/antman/main/antman) --patch=glibc
 			cd ..
 		fi
+
+		if [[ $COMPILER == "aosp" ]]; then
+			wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r487747c.tar.gz -O "aosp-clang.tar.gz"
+			mkdir clang-llvm && tar -xf aosp-clang.tar.gz -C clang-llvm && rm -rf aosp-clang.tar.gz
+		fi
 	fi
 
 	if [[ $LTO == "1" ]]; then
@@ -108,7 +113,7 @@ clone() {
 	fi
 
 	if [[ $POLLY == "1" ]]; then
-		if [[ $COMPILER == "clang" || $COMPILER == "neutron" || $COMPILER == "dtc" ]]; then
+		if [[ $COMPILER == "clang" || $COMPILER == "neutron" || $COMPILER == "dtc" || $COMPILER == "aosp" ]]; then
 			echo "CONFIG_LLVM_POLLY=y" >>arch/arm64/configs/$DEFCONFIG
 		fi
 	fi
@@ -130,7 +135,7 @@ exports() {
 	KBUILD_BUILD_USER="$AUTHOR"
 	SUBARCH=$ARCH
 
-	if [[ $COMPILER == "clang" || $COMPILER == "neutron" || "$COMPILER" == "fortune" ]]; then
+	if [[ $COMPILER == "clang" || $COMPILER == "neutron" || "$COMPILER" == "fortune" || $COMPILER == "aosp" ]]; then
 		KBUILD_COMPILER_STRING=$("$TC_DIR"/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
 		PATH=$TC_DIR/bin/:$PATH
 	elif [[ $COMPILER == "dtc" ]]; then
@@ -193,11 +198,12 @@ build_kernel() {
 	make O=out $DEFCONFIG
 	BUILD_START=$(date +"%s")
 
-	if [[ $COMPILER == "clang" || $COMPILER == "neutron" || $COMPILER == "dtc" || $COMPILER == "fortune" ]]; then
+	if [[ $COMPILER == "clang" || $COMPILER == "neutron" || $COMPILER == "dtc" || $COMPILER == "fortune" || $COMPILER == "aosp" ]]; then
 		MAKE+=(
 			CROSS_COMPILE=aarch64-linux-gnu-
 			CROSS_COMPILE_COMPAT=arm-linux-gnueabi-
 			LLVM=1
+			LLVM_IAS=1
 			CC=clang
 			AR=llvm-ar
 			OBJDUMP=llvm-objdump
@@ -227,7 +233,7 @@ build_kernel() {
 	BUILD_END=$(date +"%s")
 	DIFF=$((BUILD_END - BUILD_START))
 
-	if [[ -f "$KERNEL_DIR"/out/arch/arm64/boot/Image.gz-dtb ]]; then
+	if [[ -f "$KERNEL_DIR"/out/arch/arm64/boot/Image ]]; then
 		echo -e "\n\e[1;32m[✓] Kernel successfully compiled! \e[0m"
 		gen_zip
 		push
@@ -244,13 +250,13 @@ gen_zip() {
 	echo -e "\n\e[1;32m[*] Create a flashable zip! \e[0m"
 	mv "$KERNEL_DIR"/out/arch/arm64/boot/Image AnyKernel3
 	cdir AnyKernel3
-        if [[ $KERNELSU == "1" ]]; then
+	if [[ $KERNELSU == "1" ]]; then
 		zip -r $KNAME-$DEVICE-KSU-"$ZDATE" . -x ".git*" -x "README.md" -x "*.zip"
 		ZIP_FINAL="$KNAME-$DEVICE-KSU-$ZDATE"
 	else
 		zip -r $KNAME-$DEVICE-"$ZDATE" . -x ".git*" -x "README.md" -x "*.zip"
 		ZIP_FINAL="$KNAME-$DEVICE-$ZDATE"
-fi
+	fi
 
 	if [[ $SIGN == 1 ]]; then
 		## Sign the zip before sending it to telegram
