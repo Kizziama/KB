@@ -18,7 +18,7 @@ TC_DIR=$KERNEL_DIR/clang-llvm
 KNAME="Pineaple"
 AUTHOR="Kizziama"
 ARCH=arm64
-DEFCONFIG="pineaple_defconfig"
+DEFCONFIG="topaz_defconfig"
 COMPILER="${COMP}"
 LTO="1"
 POLLY="0"
@@ -31,7 +31,7 @@ DEVICE="topaz"
 # Misc info
 CLEAN="0"
 PUSH="${PUSH_TO}"
-SIGN="1"
+SIGN="0"
 if [[ $SIGN == 1 ]]; then
 	#Check for java
 	if ! hash java 2>/dev/null 2>&1; then
