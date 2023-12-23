@@ -18,7 +18,7 @@ TC_DIR=$KERNEL_DIR/clang-llvm
 KNAME="Pineaple"
 AUTHOR="Kizziama"
 ARCH=arm64
-DEFCONFIG="gki_defconfig"
+DEFCONFIG="pineaple_defconfig"
 COMPILER="${COMP}"
 LTO="1"
 POLLY="0"
@@ -138,7 +138,7 @@ exports() {
 	KBUILD_BUILD_USER="$AUTHOR"
 	SUBARCH=$ARCH
 
-	if [[ $COMPILER == "clang" || $COMPILER == "neutron" || "$COMPILER" == "fortune" || $COMPILER == "aosp" ]]; then
+	if [[ $COMPILER == "clang" || $COMPILER == "neutron" || "$COMPILER" == "fortune" || "$COMPILER" == "aosp" ]]; then
 		KBUILD_COMPILER_STRING=$("$TC_DIR"/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
 		PATH=$TC_DIR/bin/:$PATH
 	elif [[ $COMPILER == "dtc" ]]; then
@@ -201,7 +201,7 @@ build_kernel() {
 	make O=out $DEFCONFIG
 	BUILD_START=$(date +"%s")
 
-	if [[ $COMPILER == "clang" || $COMPILER == "neutron" || $COMPILER == "dtc" || $COMPILER == "fortune" || $COMPILER == "aosp" ]]; then
+	if [[ $COMPILER == "clang" || $COMPILER == "neutron" || $COMPILER == "dtc" || $COMPILER == "fortune" || "$COMPILER" == "aosp" ]]; then
 		MAKE+=(
 			CROSS_COMPILE=aarch64-linux-gnu-
 			CROSS_COMPILE_COMPAT=arm-linux-gnueabi-
@@ -300,7 +300,11 @@ push() {
 		echo -e "\n\e[1;93m[*] Starting push kernel to Github Release! \e[0m"
 		org="Kizziama"
 		rel_repo="release"
-		rel_tag="$(date "+%d%m%Y")"
+		if [[ "$KERNELSU" == "1" ]]; then
+			rel_tag="Pineaple-KSU-$(date "+%d%m%Y")"
+		else
+			rel_tag="Pineaple-$(date "+%d%m%Y")"
+		fi
 		rel_date="$(date "+%-d %B %Y")"
 		if [[ $SIGN == 1 ]]; then
 			rel_file="$ZIP_SIGN.zip"
@@ -317,7 +321,7 @@ push() {
 		cp ../$cfile .
 
 		git add $cfile
-		git commit -asm "release: Add Pineaple Kernel build $rel_tag"
+		git commit -asm "release: Release $rel_tag"
 		git gc
 		git push -f
 
